@@ -1,7 +1,7 @@
 ---
 name: code-graph
 description: >
-  Use tree-sitter to build a structural code graph of a project — extract definitions, references, imports, and module dependencies to quickly understand unfamiliar codebases. Trigger when: user asks to "understand this codebase", "map the architecture", "show me the structure", "what does this project do", "how is this organized", "code graph", "dependency graph", "call graph", or any request to get a high-level overview of a project's code. Also trigger when exploring a new/unfamiliar repo for the first time, or when the user asks about relationships between modules, files, or components.
+  Use tree-sitter to build a structural code graph of a project — extract definitions, references, imports, and module dependencies to quickly understand unfamiliar codebases. Trigger when: user asks to "understand this codebase", "map the architecture", "show me the structure", "what does this project do", "how is this organized", "code graph", "dependency graph", "call graph", or any request to get a high-level overview of a project's code. Also trigger when exploring a new/unfamiliar repo for the first time, or when the user asks about relationships between modules, files, or components. Also trigger when the user asks to refactor a module, file, or component — understanding the module's public surface, internal structure, and all dependents is a prerequisite to safe refactoring.
 ---
 
 # Code Graph: Project Understanding via Tree-sitter
@@ -82,13 +82,53 @@ Use `tree-sitter query` with custom patterns from `references/query-patterns.md`
 - `references/query-patterns.md` — Language-specific query patterns for extracting imports, exports, class hierarchies, function signatures, and more
 - `references/graph-extraction.md` — Techniques for building dependency graphs, call graphs, and module maps from tree-sitter output
 
+## Refactoring a Module
+
+When asked to refactor a module, file, or component, use the code graph to assess blast radius **before** making changes.
+
+### Step 1: Map the module's public surface
+
+Run `tree-sitter tags` on the target module to identify every exported definition:
+
+```bash
+tree-sitter tags 'src/core/engine.rs' 2>/dev/null | grep 'definition'
+```
+
+These are the symbols that other modules may depend on. Renaming, removing, or changing the signature of any of these is a breaking change.
+
+### Step 2: Find all dependents
+
+Search the codebase for imports of this module and references to its exports:
+
+```bash
+# Find who imports this module (adjust query per language — see references/query-patterns.md)
+tree-sitter tags 'src/**/*.rs' 2>/dev/null | grep 'reference'
+```
+
+Cross-reference with a grep for the module path to catch re-exports and indirect usage.
+
+### Step 3: Map internal structure
+
+Run `tree-sitter tags` on the module's files to understand internal organization — private functions, helper types, internal state. These are safe to restructure freely.
+
+### Step 4: Assess and proceed
+
+With the public surface, dependents, and internal structure mapped:
+
+- **Safe changes**: renaming private functions, reorganizing internal logic, splitting internal helpers — no dependents affected
+- **Requires updates**: renaming public symbols, changing function signatures, moving exports — update all dependents
+- **Risky changes**: removing public exports, changing return types, altering trait/interface contracts — verify all call sites
+
+Always present the blast radius to the user before proceeding with breaking changes.
+
 ## Decision Flowchart
 
 1. **New codebase, need overview?** → Run `tree-sitter tags` across all source files, then read `references/graph-extraction.md`
 2. **Need to understand a specific module?** → Run `tree-sitter tags` + `tree-sitter parse` on that module's files
 3. **Need import/dependency info?** → Load `references/query-patterns.md`, use the import queries for the project's language
 4. **Need class hierarchy or interface map?** → Load `references/query-patterns.md`, use the inheritance/implementation queries
-5. **Parser not working for a language?** → Load `references/setup.md`
+5. **Refactoring a module?** → Follow the "Refactoring a Module" section above, then load `references/graph-extraction.md` for dependency graph techniques
+6. **Parser not working for a language?** → Load `references/setup.md`
 
 ## Output Interpretation
 
@@ -107,4 +147,4 @@ Kinds you'll see:
 - `reference.implementation` — interface implementations (e.g., `impl Trait for Type`)
 
 ## Keywords
-code graph, codebase structure, project architecture, module map, dependency graph, tree-sitter, code navigation, understand codebase, explore project, definitions, references, imports, call graph, class hierarchy
+code graph, codebase structure, project architecture, module map, dependency graph, tree-sitter, code navigation, understand codebase, explore project, definitions, references, imports, call graph, class hierarchy, refactor, refactoring, restructure, reorganize, extract module, split module, blast radius, breaking changes, dependents
