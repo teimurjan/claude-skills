@@ -1,5 +1,5 @@
 ---
-name: review-pr
+name: address-pr-review
 description: >
   Fetch and address GitHub PR review comments for the current branch. Trigger when: user asks to "address PR comments", "fix review feedback", "handle PR reviews", "review-pr", "address review", "fix PR comments", or any request to act on pull request review feedback. Also trigger when the user pastes a PR URL and asks to address its comments.
 ---
