@@ -10,3 +10,6 @@
 [submodule ".vendor/nutlope-hallmark"]
 	path = .vendor/nutlope-hallmark
 	url = https://github.com/Nutlope/hallmark
+[submodule ".vendor/eronred-aso-skills"]
+	path = .vendor/eronred-aso-skills
+	url = https://github.com/Eronred/aso-skills

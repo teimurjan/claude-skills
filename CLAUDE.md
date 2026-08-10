@@ -31,6 +31,7 @@ Vendored skills:
 - **code-simplification**, **idea-refine** - `addyosmani/agent-skills`
 - **skill-creator** - `anthropics/skills`
 - **motion-framer** - `freshtechbro/claudedesignskills`
+- **aso-router** and 39 sibling ASO/app-marketing skills - `Eronred/aso-skills`. Start at `aso-router`; it dispatches to the specialist skills.
 
 ## Code Graph
 
